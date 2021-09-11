@@ -2,12 +2,12 @@ import torch
 import torch.nn.functional as F
 from torch.optim import Adam
 from utils.misc import soft_update, hard_update, enable_gradients, disable_gradients
-from utils.agents import AttentionAgent
-from utils.critics import AttentionCritic
+from utils.agents import Agent
+from utils.critics import Critic
 
 MSELoss = torch.nn.MSELoss()
 
-class AttentionSAC(object):
+class SAC(object):
     """
     Wrapper class for SAC agents with central attention critic in multi-agent
     task
@@ -59,6 +59,15 @@ class AttentionSAC(object):
         self.trgt_critic_dev = 'cpu'  # device for target critics
         self.niter = 0
 
+        self.init_dict = {'gamma': gamma, 'tau': tau,
+                     'pi_lr': pi_lr, 'q_lr': q_lr,
+                     'reward_scale': reward_scale,
+                     'pol_hidden_dim': pol_hidden_dim,
+                     'critic_hidden_dim': critic_hidden_dim,
+                     'attend_heads': attend_heads,
+                     'agent_init_params': agent_init_params,
+                     'sa_size': sa_size}
+
     @property
     def policies(self):
         return [a.policy for a in self.agents]
@@ -108,7 +117,7 @@ class AttentionSAC(object):
                 q_loss += reg  # regularizing attention
         q_loss.backward()
         self.critic.scale_shared_grads()
-        grad_norm = torch.nn.utils.clip_grad_norm(
+        grad_norm = torch.nn.utils.clip_grad_norm_(
             self.critic.parameters(), 10 * self.nagents)
         self.critic_optimizer.step()
         self.critic_optimizer.zero_grad()
@@ -155,7 +164,7 @@ class AttentionSAC(object):
             pol_loss.backward()
             enable_gradients(self.critic)
 
-            grad_norm = torch.nn.utils.clip_grad_norm(
+            grad_norm = torch.nn.utils.clip_grad_norm_(
                 curr_agent.policy.parameters(), 0.5)
             curr_agent.policy_optimizer.step()
             curr_agent.policy_optimizer.zero_grad()
@@ -243,11 +252,11 @@ class AttentionSAC(object):
         """
         agent_init_params = []
         sa_size = []
-        for acsp, obsp in zip(env.action_space,
-                              env.observation_space):
+        for acsp, obsp in zip(env.get_action_space(),
+                              env.get_observation_space()):
             agent_init_params.append({'num_in_pol': obsp.shape[0],
-                                      'num_out_pol': acsp.n})
-            sa_size.append((obsp.shape[0], acsp.n))
+                                      'num_out_pol': acsp[0]})
+            sa_size.append((obsp.shape[0], acsp[0]))
 
         init_dict = {'gamma': gamma, 'tau': tau,
                      'pi_lr': pi_lr, 'q_lr': q_lr,

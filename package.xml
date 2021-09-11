@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>multi_agent_sac</name>
+  <version>0.0.0</version>
+  <description>The multi_agent_sac package</description>
+
+  <maintainer email="vince@todo.todo">vince</maintainer>
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>roslib</depend>
+  <depend>roslint</depend>
+
+  <export>
+  </export>
+</package>

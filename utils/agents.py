@@ -4,7 +4,7 @@ from torch.optim import Adam
 from utils.misc import hard_update, gumbel_softmax, onehot_from_logits
 from utils.policies import DiscretePolicy
 
-class AttentionAgent(object):
+class Agent(object):
     """
     General class for Attention agents (policy, target policy)
     """

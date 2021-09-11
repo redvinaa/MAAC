@@ -5,7 +5,7 @@ import numpy as np
 from itertools import chain
 
 
-class AttentionCritic(nn.Module):
+class Critic(nn.Module):
     """
     Attention network, used as critic for all agents. Each agent gets its own
     observation and action, and can also attend over the other agents' encoded
